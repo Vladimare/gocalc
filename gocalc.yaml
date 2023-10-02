@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gocalc
+  labels:
+    run: gocalc
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      run: gocalc
+  template:
+    metadata:
+      labels:
+        run: gocalc
+    spec:
+      containers:
+      - name: gocalc
+        image: gocalc:1.0.0
+        ports:
+        - containerPort: 8080
+        imagePullPolicy: Never
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "80Mi"
+          limits:
+            cpu: "100m"
+            memory: "150Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: go-calc
+spec:
+  type: NodePort
+  selector:
+    run: gocalc
+  ports:
+  - port: 8080
+    targetPort: 8080
+    protocol: TCP
+    nodePort: 30080
+
