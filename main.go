@@ -1,63 +1,55 @@
 package main
 
 import (
-    "net/http"
-    "fmt"
-    "log"
-    "strconv"
+	"fmt"
+	"log"
+	"net/http"
+	"strconv"
 )
 
 func checkErr(err error) {
-    if err != nil {
-        log.Fatal(err)
-    }
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
-func plusHandler(w http.ResponseWriter, r *http.Request) {
-    a, err := strconv.Atoi(r.FormValue("a"))
-    checkErr(err)
-    b, err := strconv.Atoi(r.FormValue("b"))
-    checkErr(err)
-    w.Header().Set("Content-type", "application/json")
-    resp := `{"result": ` + strconv.Itoa(a + b) + `}`
-    w.Write([]byte(resp))
+func calcHandler(op byte) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		a, b := getOperands(r)
+		resp := calculate(a, b, op)
+		w.Header().Set("Content-type", "application/json")
+		w.Write(resp)
+	})
 }
 
-func minusHandler(w http.ResponseWriter, r *http.Request) {
-    a, err := strconv.Atoi(r.FormValue("a"))
-    checkErr(err)
-    b, err := strconv.Atoi(r.FormValue("b"))
-    checkErr(err)
-    w.Header().Set("Content-type", "application/json")
-    resp := `{"result": ` + strconv.Itoa(a - b) + `}`
-    w.Write([]byte(resp))
+func getOperands(r *http.Request) (a, b int) {
+	a, err := strconv.Atoi(r.FormValue("a"))
+	checkErr(err)
+	b, err = strconv.Atoi(r.FormValue("b"))
+	checkErr(err)
+	return a, b
 }
 
-func multiplyHandler(w http.ResponseWriter, r *http.Request) {
-    a, err := strconv.Atoi(r.FormValue("a"))
-    checkErr(err)
-    b, err := strconv.Atoi(r.FormValue("b"))
-    checkErr(err)
-    w.Header().Set("Content-type", "application/json")
-    resp := `{"result": ` + strconv.Itoa(a * b) + `}`
-    w.Write([]byte(resp))
-}
-
-func divideHandler(w http.ResponseWriter, r *http.Request) {
-    a, err := strconv.Atoi(r.FormValue("a"))
-    checkErr(err)
-    b, err := strconv.Atoi(r.FormValue("b"))
-    checkErr(err)
-    w.Header().Set("Content-type", "application/json")
-    resp := `{"result": ` + strconv.Itoa(a / b) + `}`
-    w.Write([]byte(resp))
+func calculate(a, b int, op byte) []byte {
+	var result int
+	switch op {
+	case '+':
+		result = a + b
+	case '-':
+		result = a - b
+	case '*':
+		result = a * b
+	case '/':
+		result = a / b
+	}
+	return []byte(`{"result": ` + strconv.Itoa(result) + `}`)
 }
 
 func main() {
-    http.HandleFunc("/plus", plusHandler)
-    http.HandleFunc("/minus", minusHandler)
-    http.HandleFunc("/multiply", multiplyHandler)
-    http.HandleFunc("/divide", divideHandler)
-    fmt.Println("Starting server at :8080")
-    http.ListenAndServe(":8080", nil)
+	http.Handle("/plus", calcHandler('+'))
+	http.Handle("/minus", calcHandler('-'))
+	http.Handle("/multiply", calcHandler('*'))
+	http.Handle("/divide", calcHandler('/'))
+	fmt.Println("Starting server at :8080")
+	http.ListenAndServe(":8080", nil)
 }
