@@ -1,15 +1,16 @@
 package main
 
 import (
-	"fmt"
 	"log"
+	"net"
 	"net/http"
+	"os"
 	"strconv"
 )
 
-func checkErr(err error) {
+func checkErr(cause string, err error) {
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalln(cause, err)
 	}
 }
 
@@ -24,9 +25,9 @@ func calcHandler(op byte) http.Handler {
 
 func getOperands(r *http.Request) (a, b int) {
 	a, err := strconv.Atoi(r.FormValue("a"))
-	checkErr(err)
+	checkErr("Fail to get a", err)
 	b, err = strconv.Atoi(r.FormValue("b"))
-	checkErr(err)
+	checkErr("Fail to get b", err)
 	return a, b
 }
 
@@ -42,7 +43,11 @@ func calculate(a, b int, op byte) []byte {
 	case '/':
 		result = a / b
 	}
-	return []byte(`{"result": ` + strconv.Itoa(result) + `}`)
+	hostname, err := os.Hostname()
+	checkErr("Fail to get hostname", err)
+	ip, err := net.ResolveIPAddr("ip", hostname)
+	checkErr("Fail to get ip", err)
+	return []byte(ip.String() + `:{"result": ` + strconv.Itoa(result) + `}`)
 }
 
 func main() {
@@ -50,6 +55,6 @@ func main() {
 	http.Handle("/minus", calcHandler('-'))
 	http.Handle("/multiply", calcHandler('*'))
 	http.Handle("/divide", calcHandler('/'))
-	fmt.Println("Starting server at :8080")
+	log.Println("Starting server at :8080")
 	http.ListenAndServe(":8080", nil)
 }
