@@ -2,10 +2,11 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: gocalc
+  namespace: go-calc
   labels:
     run: gocalc
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       run: gocalc
@@ -32,13 +33,12 @@ apiVersion: v1
 kind: Service
 metadata:
   name: go-calc
+  namespace: go-calc
 spec:
-  type: NodePort
   selector:
     run: gocalc
   ports:
   - port: 8080
     targetPort: 8080
     protocol: TCP
-    nodePort: 30080
 
