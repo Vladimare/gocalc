@@ -29,7 +29,7 @@ sudo echo '<ingress ip address> go.calc' >> /etc/hosts
 ### Connect to the application
 
 Use the following pattern for the calculations:
-http://go.calc/plus?a=4&b=3, where `plus` is an operation, `a` and `b` are operands in this addition, i.e. here we calculate `4+3`.
+`http://go.calc/plus?a=4&b=3`, where `plus` is an operation, `a` and `b` are operands in this addition, i.e. here we calculate `4+3`.
 For other operations, use `minus`, `multiply` and `divide` respectively.
 
 ## Delete deployment
